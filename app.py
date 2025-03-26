@@ -27,11 +27,16 @@ def procesar_mensaje():
 
     try:
         # Paso 1: Obtener la respuesta generada por la IA
-        respuesta_ai = obtener_respuesta_ai(mensaje_usuario) 
+        respuesta_ai = obtener_respuesta_ai(mensaje_usuario)
 
         # Paso 2: Intentamos detectar si la IA ha devuelto un JSON con los datos completos
         try:
-            respuesta_json = json.loads(respuesta_ai)
+            # Limpiar la respuesta y extraer el JSON dentro del texto
+            json_str = respuesta_ai.split("```json\n")[1].split("\n```")[0]
+
+            # Convertir la parte del texto que es JSON en un objeto Python
+            respuesta_json = json.loads(json_str)
+
             if respuesta_json.get('status') == 'datos completos':
                 # Paso 3: Llamamos a nuestra API si ya están todos los datos
                 resultado_api = llamar_a_mi_api(respuesta_json)
@@ -41,6 +46,7 @@ def procesar_mensaje():
                 })
         except Exception as e:
             # No se recibió un JSON válido, continuamos preguntando
+            print(f"Error al procesar el JSON: {str(e)}")
             pass
 
         # Si no hay datos completos, devolvemos la respuesta de la IA (seguimos la conversación)
